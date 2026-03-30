@@ -37,7 +37,7 @@ AI 에이전트에게 "컨텍스트를 어떻게 전달할 것인가"라는 문�
 
 | 문서 | 내용 |
 |------|------|
-| [03. 본편 — 10년차 PHP 위에서 모던 스택 공존시키기](./03-legacy-modernization.md) | Strangler Fig 전략, 3-Area 하이브리드 아키텍처, BpApps MVC 브릿지, 데이터베이스 공유 패턴, Docker 기반 배포, 트레이드오프와 교훈 |
+| [03. 본편 — 10년차 PHP 위에서 모던 스택 공존시키기](./03-legacy-modernization.md) | Strangler Fig 전략, 3-Area 하이브리드 아키텍처, Custom MVC 브릿지, 데이터베이스 공유 패턴, Docker 기반 배포, 트레이드오프와 교훈 |
 
 ---
 
@@ -58,7 +58,7 @@ Chapter 1의 "검색을 강제한다"의 뒷면 — 실제 검색 인프라를 �
 ## Author
 
 **ycy0922**  
-Software Engineer @ Genians  
+Software Engineer 
 
 ---
 
