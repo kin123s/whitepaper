@@ -31,7 +31,27 @@ AI 에이전트에게 "컨텍스트를 어떻게 전달할 것인가"라는 문�
 
 ---
 
-### Chapter 2. *(예정)*
+### Chapter 2. Legacy Modernization
+
+10년차 PHP 코드베이스를 멈추지 않고, Next.js 15와 자체 MVC를 공존시키며 점진적으로 현대화한 이야기.
+
+| 문서 | 내용 |
+|------|------|
+| [03. 본편 — 10년차 PHP 위에서 모던 스택 공존시키기](./03-legacy-modernization.md) | Strangler Fig 전략, 3-Area 하이브리드 아키텍처, BpApps MVC 브릿지, 데이터베이스 공유 패턴, Docker 기반 배포, 트레이드오프와 교훈 |
+
+---
+
+### Chapter 3. MCP RAG Server — AI-to-AI 지식 미들웨어 구축기
+
+Chapter 1의 "검색을 강제한다"의 뒷면 — 실제 검색 인프라를 어떻게 만들었나.
+
+| 문서 | 내용 |
+|------|------|
+| [04. 본편 — MCP RAG Server Architecture](./04-mcp-rag-server-architecture.md) | MCP 서버 아키텍처, 벡터 DB + 임베딩 사이드카, 3-Tier 검색 파이프라인, 도메인 격리, 청킹 전략, 스텔스 인덱싱, 컨테이너 오케스트레이션, 실전 교훈 |
+
+---
+
+### Chapter N. *(예정)*
 
 ---
 
