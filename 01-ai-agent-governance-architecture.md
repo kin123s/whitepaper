@@ -1,6 +1,6 @@
 # AI Agent Governance Architecture: 3-Layer Rule System for Enterprise IDE Copilots
 
-> **Author:** Kin Park  
+> **Author:** ycy0922
 > **Version:** 1.0  
 > **Date:** 2026-03-30  
 > **Status:** Portfolio Document
