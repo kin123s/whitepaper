@@ -84,7 +84,7 @@ Sidecar (Python + ChromaDB)
 │                        IDE (VS Code)                              │
 │  ┌─────────────────────────────────────────────────────────┐     │
 │  │  AI Agent (GitHub Copilot / Claude / Cursor)            │     │
-│  │  "DB의 SALES 테이블 구조를 알려줘"                        │     │
+│  │  "DB의 EX_TABLE 테이블 구조를 알려줘"                        │     │
 │  └──────────────────────┬──────────────────────────────────┘     │
 └─────────────────────────┼────────────────────────────────────────┘
                           │ stdio (JSON-RPC)
@@ -126,7 +126,7 @@ Sidecar (Python + ChromaDB)
 
 ### 2.2 데이터 흐름 — 검색 요청의 여정
 
-AI 에이전트가 `search_memory(query="SALES 테이블 스키마", domain="bizportal")`를 호출하면:
+AI 에이전트가 `search_memory(query="EX_TABLE 테이블 스키마", domain="DOMAIN1")`를 호출하면:
 
 ```
 1. IDE → MCP Server (stdio)
@@ -329,7 +329,7 @@ collection = client.get_or_create_collection(
 
 > "벡터 검색은 만능이 아니다."
 
-이것이 3-Tier를 만든 핵심 전제다. Sentence-Transformers의 MiniLM 모델은 영어에서는 훌륭하지만, **한국어 + 도메인 특화 용어** 환경에서는 정확도가 떨어진다. "HWALLLIST"라는 테이블명을 벡터 유사도로 찾는 것보다, 단순 키워드 매칭이 더 정확할 때가 많다.
+이것이 3-Tier를 만든 핵심 전제다. Sentence-Transformers의 MiniLM 모델은 영어에서는 훌륭하지만, **한국어 + 도메인 특화 용어** 환경에서는 정확도가 떨어진다. "EX_TABLE"라는 테이블명을 벡터 유사도로 찾는 것보다, 단순 키워드 매칭이 더 정확할 때가 많다.
 
 따라서 **비용이 낮은 것부터** 단계적으로 시도한다:
 
@@ -380,10 +380,10 @@ async searchViaSidecar(options: SearchOptions): Promise<VectorSearchResult[]> {
 **메타데이터 필터링의 중요성**: MiniLM의 의미 검색 능력이 제한적이므로, `where` 절로 **검색 범위를 사전에 좁힌다**:
 
 ```typescript
-// "bizportal의 git 커밋 중 에러 수정 관련" 검색
+// "DOMAIN1의 git 커밋 중 에러 수정 관련" 검색
 const where = {
     $and: [
-        { domain: "bizportal" },
+        { domain: "DOMAIN1" },
         { source_type: "git_commit" },
         { category: "error_fix" }
     ]
@@ -416,15 +416,15 @@ function tokenize(text: string): string[] {
 ```typescript
 const BOOST_TERMS: Record<string, number> = {
     // 사내 시스템 고유명사
-    genian: 2.0, wpdreport: 2.0, mi_db: 2.0,
+    ex_1: 2.0, ex_2: 2.0, ex_3: 2.0,
     // 비즈니스 엔티티
-    sales: 1.8, expenses: 1.8, hwalllist: 1.8,
+    EX_TABLE: 1.8, EX_TABLE_2: 1.8, EX_TABLE_3: 1.8,
     // 프로젝트명
-    bizportal: 1.5, partnerportal: 1.5,
+    DOMAIN1: 1.5, DOMAIN2: 1.5,
 };
 ```
 
-"HWALLLIST"라는 검색어가 들어오면 TF-IDF 점수에 1.8배 가중치가 붙어, 해당 단어가 포함된 문서가 확실하게 상위에 노출된다. 이것은 벡터 검색이 고유명사에 약한 것을 보완하는 **도메인 특화 전략**이다.
+"EX_TABLE"라는 검색어가 들어오면 TF-IDF 점수에 1.8배 가중치가 붙어, 해당 단어가 포함된 문서가 확실하게 상위에 노출된다. 이것은 벡터 검색이 고유명사에 약한 것을 보완하는 **도메인 특화 전략**이다.
 
 ### 5.5 폴백 체인
 
@@ -463,7 +463,7 @@ if (health.sidecarAvailable) {
 
 ### 6.1 문제 — 프로젝트가 섞이면
 
-AI 에이전트가 "SALES 테이블 구조를 알려줘"라고 요청받을 때, 이것이 **bizportal의 SALES**인지 **partnerportal의 SALES**인지 구분해야 한다. 두 프로젝트가 같은 벡터 DB 안에서 섞이면, 잘못된 스키마로 코드를 생성하게 된다.
+AI 에이전트가 "EX_TABLE 테이블 구조를 알려줘"라고 요청받을 때, 이것이 **DOMAIN1의 EX_TABLE**인지 **DOMAIN2의 EX_TABLE**인지 구분해야 한다. 두 프로젝트가 같은 벡터 DB 안에서 섞이면, 잘못된 스키마로 코드를 생성하게 된다.
 
 ### 6.2 3중 격리 구조
 
@@ -472,8 +472,8 @@ AI 에이전트가 "SALES 테이블 구조를 알려줘"라고 요청받을 때,
 │  Layer 1: Path-Based Isolation                    │
 │  ┌──────────────────────────────────────────┐    │
 │  │ DOMAIN_ROOTS = {                         │    │
-│  │   bizportal: "/var/www/html/bp",         │    │
-│  │   partnerportal: "/var/www/.../portal"   │    │
+│  │   DOMAIN1: "/var/www/html/DOMAIN1",         │    │
+│  │   DOMAIN2: "/var/www/.../DOMAIN2"   │    │
 │  │ }                                        │    │
 │  │ → 에이전트는 도메인 루트 밖으로 못 나감      │    │
 │  └──────────────────────────────────────────┘    │
@@ -481,13 +481,13 @@ AI 에이전트가 "SALES 테이블 구조를 알려줘"라고 요청받을 때,
 │  Layer 2: Collection-Based Isolation              │
 │  ┌──────────────────────────────────────────┐    │
 │  │ company_knowledge (공통)                   │    │
-│  │ project_context_bizportal (프로젝트별)     │    │
-│  │ project_context_partnerportal             │    │
+│  │ project_context_DOMAIN1 (프로젝트별)     │    │
+│  │ project_context_DOMAIN2             │    │
 │  └──────────────────────────────────────────┘    │
 │                                                   │
 │  Layer 3: Metadata Filter Isolation               │
 │  ┌──────────────────────────────────────────┐    │
-│  │ where: { domain: "bizportal" }            │    │
+│  │ where: { domain: "DOMAIN1" }            │    │
 │  │ → 같은 컬렉션 안에서도 도메인별 필터링       │    │
 │  └──────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────┘
@@ -500,11 +500,11 @@ AI 에이전트가 "SALES 테이블 구조를 알려줘"라고 요청받을 때,
 각 도메인의 세션 상태는 물리적으로 분리된 디렉토리에 저장된다:
 
 ```
-bizportal/.ai-local/state/sessions/
+DOMAIN1/.ai/state/sessions/
     ├── GA-5063/state.json
     └── GA-5064/state.json
 
-partnerportal/.ai-local/state/sessions/
+DOMAIN2/.ai/state/sessions/
     ├── PP-1001/state.json
     └── PP-1002/state.json
 ```
@@ -536,7 +536,7 @@ Git 커밋 로그는 **5개씩 묶어서** 하나의 청크로 만든다:
 [2024-03-11] feat: 대시보드 위젯 추가 (김철수)
 
 # 출력 (하나의 청크)
-[소스: bizportal git history | 기간: 2024-03-11~2024-03-15 | 작성자: 홍길동, 김철수, 박영희]
+[소스: DOMAIN1 git history | 기간: 2024-03-11~2024-03-15 | 작성자: 홍길동, 김철수, 박영희]
 [2024-03-15] fix: 결재 승인 로직 버그 수정 (홍길동)
 [2024-03-14] feat: 근태 API 추가 (김철수)
 ...
@@ -588,9 +588,9 @@ function chunkMarkdown(content: string, fileName: string) {
 
 ## 8. 스텔스 인덱싱
 
-### 8.1 문제 — 인덱싱이 들키면 안 된다
+### 8.1 문제 — 인덱싱으로 서비스 속도에 영향이 있으면 안된다 
 
-사내 서버에는 EDR(Endpoint Detection and Response)과 시스템 모니터링이 돌아간다. 백그라운드에서 대량의 파일을 읽고, CPU를 점유하고, 네트워크 트래픽을 발생시키면 **모니터링 알림**이 울린다. 인덱싱은 "조용히" 해야 한다.
+사내 서버에는 백그라운드에서 대량의 파일을 읽고, CPU를 점유하고, 네트워크 트래픽을 발생시킬 필요는 없다, 인덱싱은 "조용히" 해야 한다.
 
 ### 8.2 우선순위 큐 시스템
 
@@ -630,7 +630,7 @@ class StealthWorker {
 | 설계 결정 | 이유 |
 |----------|------|
 | 단일 워커 | SQLite(ChromaDB 백엔드)의 Write Lock 경합 방지 |
-| 2초 딜레이 | CPU 스파이크 방지 → EDR/모니터링 미감지 |
+| 2초 딜레이 | CPU 스파이크 방지 → 과부하 미감지 |
 | 배치 12개 + 4초 쿨다운 | 대량 인덱싱도 CPU 사용률 억제 |
 
 이것은 성능 최적화의 **반대**다. 의도적으로 느리게 만들어 "눈에 띄지 않는" 인덱싱을 구현한다.
@@ -764,8 +764,8 @@ healthcheck:
 
 RAG의 블로그 글들은 "임베딩 → 벡터 DB → 프로파일!"을 간단하게 그린다. 현실은 달랐다.
 
-- MiniLM은 한국어 고유명사(HWALLLIST, WPDREPORT)를 제대로 이해하지 못한다
-- 짧은 DDL 구문(`CREATE TABLE SALES (...)`)은 임베딩 벡터가 비슷비슷하게 나온다
+- MiniLM은 한국어 고유명사(EX_TABLE, WPDREPORT)를 제대로 이해하지 못한다
+- 짧은 DDL 구문(`CREATE TABLE EX_TABLE (...)`)은 임베딩 벡터가 비슷비슷하게 나온다
 - **메타데이터 필터 + 도메인 부스트**가 모델 자체보다 검색 정확도에 더 기여했다
 
 결론: 약한 시맨틱 모델이라도, 강한 메타데이터 설계와 결합하면 충분히 쓸 만하다.
