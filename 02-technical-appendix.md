@@ -93,7 +93,7 @@ AI Agent Governance Architecture
 │  │  ├─ project.md              프로젝트 개요·목적·3-Tier 구조
 │  │  ├─ architecture.md         시스템 설계 참조
 │  │  ├─ api-endpoints.md        MCP 서버 라우트·도구 목록
-│  │  ├─ database-genian.md      DB 스키마 인덱스
+│  │  ├─ database-TABLE1.md      DB 스키마 인덱스
 │  │  └─ coding-style/           멀티 언어 코드 패턴
 │  │
 │  ├─ roles/                     ← 로컬 에이전트 오버라이드
@@ -132,7 +132,7 @@ AI Agent Governance Architecture
 └─ ANCILLARY
    ├─ .agents/                   ← VS Code Agent 시스템
    │  └─ skills/
-   │     ├─ geni-workflow/SKILL.md     워크플로우 매핑 스킬
+   │     ├─ app-workflow/SKILL.md     워크플로우 매핑 스킬
    │     ├─ legacy-php-analysis/SKILL.md  레거시 PHP 분석 스킬
    │     ├─ mcp-rag-tools/SKILL.md     MCP RAG 도구 스킬
    │     └─ database-knowledge/        오프라인 DB 스키마
@@ -261,12 +261,12 @@ L2 프로젝트 전용 규칙 (동기화 비대상):
 
 | # | 파일 | 도메인 | 핵심 정책 |
 |---|------|--------|----------|
-| 1 | `local-coding.md` | 코딩 | 3영역 DB 격리 (Legacy/BpApps/Modern) |
+| 1 | `local-coding.md` | 코딩 | 3영역 DB 격리 (Legacy/ModenApp/Modern) |
 | 2 | `local-db.md` | DB | Docker exec MYSQL, config.php 파싱(require 금지), LIMIT 10 |
 | 3 | `local-security.md` | 보안 | PHP 세션 vs Keycloak, 업로드 제한 |
 | 4 | `cto-dispatch.md` | 오케스트레이션 | 도메인 매칭, 복잡도 판단(Quick/Standard/Full) |
 | 5 | `mcp-usage.md` | **MCP (CRITICAL)** | 필수 검색 트리거, STOP→SEARCH→VERIFY 순서, 오프라인 폴백 |
-| 6 | `project-paths.md` | 경로 | AI MCP Server / Bizportal / Partner Portal 경로 맵 |
+| 6 | `project-paths.md` | 경로 | AI MCP Server / DOMAIN1 / Partner Portal 경로 맵 |
 | 7 | `skills-governance.md` | 스킬 | `.agents/skills/` 등록·호출 정책 |
 
 ---
@@ -304,8 +304,8 @@ MCP 도구 호출 시 `domain` 파라미터로 데이터 격리:
 
 | Domain | 대상 프로젝트 | 데이터 범위 |
 |--------|-------------|-----------|
-| `bizportal` | 비즈포탈 ERP | GENIAN, WPDREPORT, SCANRAW DB + 레거시 PHP |
-| `partnerportal` | 파트너포탈 | 파트너사 데이터 + React/PHP BpApps |
+| `DOMAIN1` | DOMAIN1 ERP | TABLE1, TABLE2, TABLE3 + 레거시 PHP |
+| `DOMAIN2` | DOMAIN2 | 타 데이터 + React/PHP ModenApp |
 
 ---
 
@@ -536,7 +536,7 @@ MCP 도구 호출 시 `domain` 파라미터로 데이터 격리:
 ## Trigger Conditions (필수 검색 조건)
 
 ### DB/테이블 키워드
-- SALES, EXPENSES, LICENSE, SITE, CUSTOMER, PERSON, ...
+- TABLE1, TABLE2,  ...
 
 ### Action Sequence
 1. **STOP**: 즉각적인 답변 생성을 중단
@@ -574,7 +574,7 @@ search_memory나 query_context를 호출하기 전,
 
 1. 내가 찾고자 하는 과거 패턴의 핵심 키워드는 무엇인가?
 2. 결과가 너무 많이 나오지 않도록 검색어를 구체화했는가?
-   (예: "DB 에러" ❌ → "BpApps BaseModel PDO Connection Error" ⭕)
+   (예: "DB 에러" ❌ → "ModenApp Model PDO Connection Error" ⭕)
 </rag_search_protocol>
 ```
 
