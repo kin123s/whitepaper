@@ -86,7 +86,7 @@ AI 에이전트가 잘못된 경로에서 무한 루프에 빠지는 것을 원�
 
 ### 2.5 SSOT (Single Source of Truth)
 
-모든 규칙의 원본은 `company-ai-setup` 허브 하나에만 존재한다. 각 프로젝트의 `.ai-local/` 디렉토리는 이 원본의 **동기화된 사본 + 프로젝트 고유 확장**이다. 수동 편집 금지, 반드시 동기화 스크립트를 통해 전파한다.
+모든 규칙의 원본은 `company-ai-setup` 허브 하나에만 존재한다. 각 프로젝트의 `.ai/` 디렉토리는 이 원본의 **동기화된 사본 + 프로젝트 고유 확장**이다. 수동 편집 금지, 반드시 동기화 스크립트를 통해 전파한다.
 
 ### 2.6 Search Before Guess (추측 전 검색)
 
@@ -109,7 +109,7 @@ AI 에이전트가 DB 스키마, 레거시 API, 비즈니스 로직에 대해 "�
         │    ai-sync.sh (hash-verified top-down sync)
         ▼           ▼             ▼                ▼
 ┌──────────────────────────────────────────────────────────────┐
-│              L2: Project Layer (.ai-local/)                    │
+│              L2: Project Layer (.ai/)                    │
 │  ┌─────────────┐  ┌──────────────┐  ┌─────────────────────┐ │
 │  │ L1 Copy     │  │ Domain Rules │  │ Context Docs        │ │
 │  │ (read-only) │  │ local-*.md   │  │ project.md          │ │
@@ -160,12 +160,12 @@ trigger: model_decision  # AI가 판단하여 필요 시 로드
 
 ### 3.3 L2 — Project Layer (프로젝트 도메인)
 
-**위치**: 각 프로젝트의 `.ai-local/` 디렉토리
+**위치**: 각 프로젝트의 `.ai/` 디렉토리
 
 L2는 L1을 **상속받으면서** 프로젝트 고유의 도메인 지식을 추가한다:
 
 ```
-.ai-local/
+.ai/
 ├── rules.md              ← L1 허브 사본 + L2 도메인 섹션
 ├── rules/
 │   ├── guardrails.md     ← L1 사본 (상단) + L2 확장 (하단 보호구역)
@@ -191,13 +191,13 @@ L2는 L1을 **상속받으면서** 프로젝트 고유의 도메인 지식을 �
 
 ### 3.4 L3 — Task/Session Layer (태스크 실행)
 
-**위치**: `.ai-local/state/sessions/{ISSUE-ID}/`
+**위치**: `.ai/state/sessions/{ISSUE-ID}/`
 
 L3는 개별 작업의 **실행 상태를 추적**한다. 각 세션은 Jira 이슈 ID를 디렉토리명으로 사용하며, 작업 재개 시 `state.json`을 통해 이전 맥락을 즉시 복원한다:
 
 ```json
 {
-  "session_id": "GA-5063",
+  "session_id": "ISSUE-0001",
   "status": "active",
   "active_agent": { "id": "worker_agent", "phase": "execute" },
   "context_summary": "PDO 연결 풀 에러 발생. config.php의 DSN 파싱 로직 수정 시도 예정.",
@@ -310,9 +310,9 @@ T3    │ 금지          │ 타 에이전트 역할, 무관 가이드   │ �
 ```
 company-ai-setup (Hub)
         │
-        ├── ai-sync.sh ──→ bizportal/.ai-local/      (Spoke 1)
-        ├── ai-sync.sh ──→ partnerportal/.ai-local/   (Spoke 2)
-        └── ai-sync.sh ──→ ai-mcp-server/.ai-local/   (Spoke 3)
+        ├── ai-sync.sh ──→ bizportal/.ai/      (Spoke 1)
+        ├── ai-sync.sh ──→ partnerportal/.ai/   (Spoke 2)
+        └── ai-sync.sh ──→ ai-mcp-server/.ai/   (Spoke 3)
 ```
 
 **단방향 Top-Down**: 허브 → 프로젝트. 프로젝트가 허브 규칙을 역으로 수정하는 것은 불가.
@@ -321,7 +321,7 @@ company-ai-setup (Hub)
 
 ```bash
 # 동기화 실행
-./bin/ai-sync.sh --l2-hub=/path/to/hub/.ai --target-dir=.ai-local
+./bin/ai-sync.sh --l2-hub=/path/to/hub/.ai --target-dir=.ai
 ```
 
 동기화 프로세스:
@@ -581,4 +581,4 @@ L1 동기화 시 L2 고유 규칙이 덮어씌워지는 사고를 겪은 후, `<
 
 ---
 
-*© 2026 Kin Park. 본 문서는 개인 포트폴리오 목적으로 작성되었으며, 사내 기밀 정보는 포함되어 있지 않습니다.*
+*© 2026 ycy0922. 본 문서는 개인 포트폴리오 목적으로 작성되었으며, 사내 기밀 정보는 포함되어 있지 않습니다.*
