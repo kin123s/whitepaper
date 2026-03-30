@@ -114,7 +114,7 @@ AI 에이전트가 DB 스키마, 레거시 API, 비즈니스 로직에 대해 "�
 │  │ L1 Copy     │  │ Domain Rules │  │ Context Docs        │ │
 │  │ (read-only) │  │ local-*.md   │  │ project.md          │ │
 │  │             │  │ mcp-usage.md │  │ architecture.md     │ │
-│  │ <!-- L2 --> │  │ cto-dispatch │  │ database-genian.md  │ │
+│  │ <!-- L2 --> │  │ cto-dispatch │  │ database-Table1.md  │ │
 │  │ (preserved) │  │ skills-gov.  │  │ api-endpoints.md    │ │
 │  └──────┬──────┘  └──────────────┘  └─────────────────────┘ │
 │         │                                                     │
@@ -310,8 +310,8 @@ T3    │ 금지          │ 타 에이전트 역할, 무관 가이드   │ �
 ```
 company-ai-setup (Hub)
         │
-        ├── ai-sync.sh ──→ bizportal/.ai/      (Spoke 1)
-        ├── ai-sync.sh ──→ partnerportal/.ai/   (Spoke 2)
+        ├── ai-sync.sh ──→ DOMAIN1/.ai/      (Spoke 1)
+        ├── ai-sync.sh ──→ DOMAIN2/.ai/   (Spoke 2)
         └── ai-sync.sh ──→ ai-mcp-server/.ai/   (Spoke 3)
 ```
 
@@ -412,8 +412,8 @@ IDE AI Agent (Copilot/Claude/Cursor)
 
 | 키워드 유형 | 예시 | 트리거 |
 |-----------|------|--------|
-| DB/테이블 | SALES, EXPENSES, HWALLLIST, GENIAN | `search_memory(domain="bizportal")` |
-| 코드/프레임워크 | MI_DB, PDO, BaseModel, BpApps | `search_memory(collection="company_knowledge")` |
+| DB/테이블 | Table2, Table3, Table4, Table1 | `search_memory(domain="DOMAIN1")` |
+| 코드/프레임워크 | L_DB, PDO, ModenModel, ModenApp | `search_memory(collection="company_knowledge")` |
 | 비즈니스 도메인 | 매출, 수금, 비용, 라이선스, 파이프라인 | `search_memory(query="...")` |
 
 **실행 순서 (STOP → SEARCH → VERIFY → CITE)**:
@@ -429,7 +429,7 @@ IDE AI Agent (Copilot/Claude/Cursor)
 MCP 서버 timeout/connection refused
   → 1회 재시도
   → 실패 시 정적 컨텍스트 모드 전환:
-      1. .ai/context/database-genian.md 인덱스 참조
+      1. .ai/context/database-Table1.md 인덱스 참조
       2. 키워드 기반 grep_search
       3. 사용자에게 "MCP 미응답" 1회 알림
 ```
