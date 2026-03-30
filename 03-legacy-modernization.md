@@ -80,7 +80,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 5. (궁극적으로) 기존 시스템 제거 — 또는 무기한 공존
 ```
 
-### 2.2 Bizportal에서의 적용
+### 2.2 DOMAIN1에서의 적용
 
 우리의 경우, 단계 5("완전 제거")는 **의도적으로 목표로 잡지 않았다**. 이유:
 
@@ -105,7 +105,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 │  │  Legacy PHP  │  │  Core MVC Framework MVC  │  │  Next.js 15       │  │
 │  │              │  │              │  │                    │  │
 │  │  파일 = URL  │  │  라우터 기반  │  │  App Router       │  │
-│  │  MI_DB_*     │  │  BaseModel   │  │  REST API 소비    │  │
+│  │  L_DB_*     │  │  ModenModel   │  │  REST API 소비    │  │
 │  │  jQuery UI   │  │  JSON 응답   │  │  React 19 + AntD  │  │
 │  │  Bootstrap   │  │  Prepared    │  │  Zustand + RQ     │  │
 │  │              │  │  Statement   │  │                    │  │
@@ -115,7 +115,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 │                           │                                   │
 │                    ┌──────┴──────┐                            │
 │                    │  MariaDB    │                            │
-│                    │  (GENIAN)   │                            │
+│                    │  (MAIN_DB)   │                            │
 │                    └─────────────┘                            │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -132,7 +132,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 | **언어** | PHP 7.4 | PHP 7.4 (구조화) | TypeScript 5.4 |
 | **라우팅** | 파일명 = URL | 커스텀 라우터 | App Router |
 | **뷰 렌더링** | SSR (PHP → HTML) | JSON 응답 (API) | SSR/CSR (React 19) |
-| **DB 접근** | MI_DB_* (문자열 결합) | BaseModel (Prepared Statement) | REST API 소비 |
+| **DB 접근** | L_DB_* (문자열 결합) | ModenModel (Prepared Statement) | REST API 소비 |
 | **인증** | PHP 세션 (`$_SESSION`) | 공유 세션 + 토큰 | 공유 세션 (쿠키) |
 | **UI 프레임워크** | jQuery + Bootstrap | 없음 (API 전용) | Ant Design 5 |
 | **새 기능 추가** | ❌ 금지 | ⚠️ API 레이어만 | ✅ 권장 |
@@ -171,7 +171,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 ### 4.2 초기화 체인 — 모든 페이지의 시작점
 
 ```
-사용자가 /hwmanager.php 접속
+사용자가 /path.php 접속
         │
         ▼
 index.php (부트스트랩)
@@ -184,7 +184,7 @@ index.php (부트스트랩)
 └── user-class.php (사용자 데이터)
         │
         ▼
-hwmanager.php 실행
+path.php 실행
 ├── $db->query() → SQL 실행
 ├── 결과를 class2 테이블로 렌더링
 └── HTML + jQuery 이벤트 바인딩
@@ -192,11 +192,11 @@ hwmanager.php 실행
 
 이 체인을 **수정하지 않고** 새 시스템을 옆에 세우는 것이 핵심 전략이다.
 
-### 4.3 MI_DB_* — 레거시 DB 접근 패턴
+### 4.3 L_DB_* — 레거시 DB 접근 패턴
 
 ```php
 // 레거시 방식 — exam-db.php
-MI_DB_connect($name, $user, $pass);   // mysqli 연결
+L_DB_connect($name, $user, $pass);   // mysqli 연결
 $db->query($sql, $_mysqli);          // 문자열 결합 SQL 실행
 $db->query_get($sql, $_mysqli, $key); // 연관 배열 반환
 ```
@@ -225,7 +225,7 @@ Core MVC Framework는 "레거시를 대체하는 것"이 아니라 **"레거시�
 | AS-IS (Legacy) | TO-BE (Core MVC Framework) |
 |----------------|----------------|
 | 파일명 = URL | 라우터 기반 URL 매핑 |
-| 문자열 결합 SQL | Prepared Statement (BaseModel) |
+| 문자열 결합 SQL | Prepared Statement (ModenModel) |
 | HTML 직접 출력 | JSON 응답 (API 전용) |
 | 함수 3,600줄 flat | 네임스페이스 + MVC 분리 + 단순 설치된 라이브러리 정리 (composer 전환) |
 | 인증 흩어짐 | BaseController 미들웨어 통합 |
@@ -235,36 +235,36 @@ Core MVC Framework는 "레거시를 대체하는 것"이 아니라 **"레거시�
 ```
 Core MVC Framework/
 ├── Boot/
-│   ├── BizportalCommonConfig.php    ← PHP 7.4 초기화, 로깅
+│   ├── DOMAIN1CommonConfig.php    ← PHP 7.4 초기화, 로깅
 │   ├── Core MVC FrameworkAutoload.php           ← 네임스페이스 기반 오토로더
 │   └── Core MVC FrameworkMigration.php          ← 레거시 함수 브릿지 (핵심!)
 ├── Common/
-│   └── BizportalCommonClass.php     ← 싱글턴: 사용자/유틸/로깅
+│   └── DOMAIN1CommonClass.php     ← 싱글턴: 사용자/유틸/로깅
 ├── Config/
 │   └── Core MVC FrameworkRouteConfig.php        ← 라우터 설정
 ├── Controllers/
 │   ├── api/                         ← RESTful API 컨트롤러
-│   ├── hardware/                    ← 도메인별 컨트롤러
+│   ├── type2/                    ← 도메인별 컨트롤러
 │   └── BaseController.php           ← 인증·로깅 기본 클래스
 ├── Models/
-│   ├── BaseModel.php                ← 쿼리 빌더 + Prepared Statement
-│   └── GenianModel.php              ← DB 모델 수퍼클래스
+│   ├── ModenModel.php                ← 쿼리 빌더 + Prepared Statement
+│   └── MAIN_DBModel.php              ← DB 모델 수퍼클래스
 ├── Routes/
 │   └── v1/                          ← 버전별 라우트 정의
 ├── Helpers/                         ← 유틸리티 (Date, Format 등)
 └── Middlewares/                     ← 요청/응답 필터
 ```
 
-### 5.3 BaseModel — 안전한 쿼리 빌더
+### 5.3 ModenModel — 안전한 쿼리 빌더
 
 Core MVC Framework의 핵심 가치는 여기에 있다. 레거시의 문자열 결합 SQL을 Prepared Statement로 교체:
 
 ```php
-// Core MVC Framework 방식 — BaseModel 쿼리 빌더
-$result = (new HardwareModel())
-    ->select(['HW_SERIAL', 'HW_MAC', 'HW_STATUS'])
+// Core MVC Framework 방식 — ModenModel 쿼리 빌더
+$result = (new type2Model())
+    ->select(['item_1', 'item_2', 'item_3'])
     ->from('-')
-    ->where('-', $hwSerial)    // 자동 파라미터 바인딩
+    ->where('-', $target)    // 자동 파라미터 바인딩
     ->limit(0, 20)
     ->execute();
 ```
@@ -283,7 +283,7 @@ $result = (new HardwareModel())
 // Core MVC Framework 컨트롤러 내에서 레거시 함수 사용
 require_once ROOT_PATH . "/Core MVC Framework/Boot/Core MVC FrameworkMigration.php";
 
-// 레거시의 MI_DB_* 함수를 Core MVC Framework 컨텍스트에서 안전하게 호출
+// 레거시의 L_DB_* 함수를 Core MVC Framework 컨텍스트에서 안전하게 호출
 $legacyResult = $db->query_get($sql, $db_link, 'ID');
 ```
 
@@ -304,7 +304,7 @@ rest/--/index.php
 -/Controllers/-/-::bulkUpdate()
 ├── 인증 미들웨어 (BaseController)
 ├── 입력 검증
-├── BaseModel 쿼리 실행
+├── ModenModel 쿼리 실행
 └── JSON 응답 반환
 ```
 
@@ -337,8 +337,8 @@ rest/--/index.php
 │   ├── (office)/           # 사무실 포탈 라우트
 │   └── (mobile)/           # 모바일 전용 라우트
 ├── features/               # 도메인별 기능 모듈
-│   ├── sales/              # 매출 관리
-│   └── hardware/           # 자산 관리
+│   ├── type1/              # 매출 관리
+│   └── type2/           # 자산 관리
 ├── components/             # 공용 UI 컴포넌트
 ├── services/               # API 클라이언트 (Axios 래퍼)
 ├── hooks/                  # 커스텀 React 훅
@@ -405,7 +405,7 @@ index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
 | 시나리오 | 흐름 |
 |---------|------|
 | 기존 화면에서 데이터 조회 | Legacy PHP → $db->query → HTML 렌더링 |
-| 새 화면에서 같은 데이터 조회 | Next.js → API call → Core MVC Framework Controller → BaseModel → JSON |
+| 새 화면에서 같은 데이터 조회 | Next.js → API call → Core MVC Framework Controller → ModenModel → JSON |
 | 모던 화면에서 레거시 로직 필요 | Next.js → API → Core MVC Framework → Core MVC FrameworkMigration → 레거시 함수 |
 
 ### 7.3 화면 전환 — HTML 링크, Router 아님
@@ -414,8 +414,8 @@ index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
 
 ```
 레거시 메뉴 (jQuery):
-  <a href="/office/sales">매출 관리 (새 UI)</a>    ← Next.js 영역으로 이동
-  <a href="/hwmanager.php">장비 관리</a>           ← 레거시 영역 유지
+  <a href="/url/type1">매출 관리 (새 UI)</a>    ← Next.js 영역으로 이동
+  <a href="/page1.php">장비 관리</a>           ← 레거시 영역 유지
 ```
 
 이것은 "못생긴" 해결책이지만, 두 시스템 사이에 **불필요한 커플링을 만들지 않는** 가장 단순한 방법이다.
@@ -431,7 +431,7 @@ index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
 ```
 ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
 │  Legacy PHP   │   │  Core MVC Framework MVC   │   │  Next.js 15   │
-│  -  │   │  BaseModel    │   │  REST API     │
+│  -  │   │  ModenModel    │   │  REST API     │
 └───────┬───────┘   └───────┬───────┘   └───────┬───────┘
         │                   │                    │
         │    ┌──────────────┘                    │
@@ -449,14 +449,14 @@ index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
 | | Area 1: Legacy | Area 2: Core MVC Framework | Area 3: Next.js |
 |---|--------------|---------------|----------------|
 | **접근 방식** | Direct SQL 실행 | 쿼리 빌더 | REST API 호출 |
-| **연결** | MI_DB_connect (mysqli) | BaseModel (mysqli prepared) | HTTP → Core MVC Framework |
+| **연결** | L_DB_connect (mysqli) | ModenModel (mysqli prepared) | HTTP → Core MVC Framework |
 | **Prepared Statement** | ❌ | ✅ | ✅ (Core MVC Framework가 보장) |
-| **트랜잭션** | 수동 | BaseModel 지원 | API 단위 |
+| **트랜잭션** | 수동 | ModenModel 지원 | API 단위 |
 | **위험도** | SQL Injection 가능 | 안전 | 안전 |
 
 ### 8.3 같은 테이블, 다른 접근
 
-**HARDWARE 테이블 접근 예시**:
+**type2 테이블 접근 예시**:
 
 ```php
 // Area 1 — Legacy (-.php)
@@ -466,7 +466,7 @@ $result = $db->query($sql, $db_link);
 
 ```php
 // Area 2 — Core MVC Framework (Legacy_DB_Wrapper.php)
-$result = (new HardwareModel())
+$result = (new type2Model())
     ->select(['item_id', 'item_status'])
     ->from('ASSET_MASTER')
     ->where('item_status', $serial)  // 자동 바인딩
@@ -474,8 +474,8 @@ $result = (new HardwareModel())
 ```
 
 ```typescript
-// Area 3 — Next.js (services/hardware.ts)
-const { data } = await api.get('/--/hardware', {
+// Area 3 — Next.js (services/type2.ts)
+const { data } = await api.get('/--/type2', {
   params: { serial }
 });
 ```
@@ -492,7 +492,7 @@ const { data } = await api.get('/--/hardware', {
 # docker-compose.yml (간략화)
 services:
   # ── 데이터베이스 레이어 ──
-  mysql:                        # 메인 GENIAN DB
+  mysql:                        # 메인 MAIN_DB DB
     image: ----:5.7
     ports: ["3306:3306"]
     volumes:
@@ -555,7 +555,7 @@ Strangler Fig를 선택한 건 이상적이어서가 아니라 **현실적이어
 
 #### Lesson 3: "ORM이 아니라 안전한 SQL이 필요했다"
 
-BaseModel 쿼리 빌더를 직접 만든 건 NIH(Not Invented Here) 증후군이 아니라, **200개 테이블의 레거시 스키마에 ORM을 매핑하는 것이 불가능**했기 때문이다. 목표를 정확히 정의하면 도구 선택이 명확해진다: "SQL 추상화"가 아니라 "SQL Injection 방지".
+ModenModel 쿼리 빌더를 직접 만든 건 NIH(Not Invented Here) 증후군이 아니라, **200개 테이블의 레거시 스키마에 ORM을 매핑하는 것이 불가능**했기 때문이다. 목표를 정확히 정의하면 도구 선택이 명확해진다: "SQL 추상화"가 아니라 "SQL Injection 방지".
 
 #### Lesson 4: "브릿지는 부끄러운 게 아니다"
 
