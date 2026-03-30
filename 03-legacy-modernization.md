@@ -19,7 +19,7 @@
 2. [전략 선택 — Strangler Fig Pattern](#2-전략-선택--strangler-fig-pattern)
 3. [3-Area 하이브리드 아키텍처](#3-3-area-하이브리드-아키텍처)
 4. [Area 1: Legacy PHP — 건드리지 않는 기술](#4-area-1-legacy-php--건드리지-않는-기술)
-5. [Area 2: BpApps MVC — 레거시 위의 안전망](#5-area-2-bpapps-mvc--레거시-위의-안전망)
+5. [Area 2: Core MVC Framework MVC — 레거시 위의 안전망](#5-area-2-Core MVC Framework-mvc--레거시-위의-안전망)
 6. [Area 3: Next.js 15 — 새 피부](#6-area-3-nextjs-15--새-피부)
 7. [브릿지 패턴 — 세 영역을 잇는 접착제](#7-브릿지-패턴--세-영역을-잇는-접착제)
 8. [데이터베이스 — 하나의 진실, 세 가지 접근법](#8-데이터베이스--하나의-진실-세-가지-접근법)
@@ -49,7 +49,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 | 증상 | 구체적 예시 |
 |------|-----------|
 | **설정 체인의 복잡성** | `index.php` → `exam-config.php` → `exam-pre.php` → `exam-local.php` → `class2.php` → `exam-f.php`(3,600줄) |
-| **보안 사각지대** | `MI_DB_query($sql)` — 문자열 결합 방식의 SQL (Prepared Statement 미적용) |
+| **보안 사각지대** | `$db->query($sql)` — 문자열 결합 방식의 SQL (Prepared Statement 미적용) |
 | **거대 함수 파일** | `exam-f.php` 하나에 수백 개의 헬퍼 함수가 flat하게 나열 |
 | **라우팅 부재** | 파일명이 곧 URL — `exam-manager.php` = `/exam-manager.php` |
 | **UI 고착** | jQuery 1.x/3.x + jQuery UI + jsTree + Bootstrap — SPA 전환 불가 |
@@ -102,7 +102,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 │                                                               │
 │  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐  │
 │  │  Area 1      │  │  Area 2      │  │  Area 3           │  │
-│  │  Legacy PHP  │  │  BpApps MVC  │  │  Next.js 15       │  │
+│  │  Legacy PHP  │  │  Core MVC Framework MVC  │  │  Next.js 15       │  │
 │  │              │  │              │  │                    │  │
 │  │  파일 = URL  │  │  라우터 기반  │  │  App Router       │  │
 │  │  MI_DB_*     │  │  BaseModel   │  │  REST API 소비    │  │
@@ -126,9 +126,9 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
 
 ### 3.1 영역별 책임 매트릭스
 
-| 속성 | Area 1: Legacy PHP | Area 2: BpApps MVC | Area 3: Next.js 15 |
+| 속성 | Area 1: Legacy PHP | Area 2: Core MVC Framework MVC | Area 3: Next.js 15 |
 |------|-------------------|-------------------|-------------------|
-| **위치** | 루트 `/` | `/BpApps/` + `/rest/exam/` | `/exam-web/` |
+| **위치** | 루트 `/` | `/Core MVC Framework/` + `/rest/exam/` | `/exam-web/` |
 | **언어** | PHP 7.4 | PHP 7.4 (구조화) | TypeScript 5.4 |
 | **라우팅** | 파일명 = URL | 커스텀 라우터 | App Router |
 | **뷰 렌더링** | SSR (PHP → HTML) | JSON 응답 (API) | SSR/CSR (React 19) |
@@ -145,7 +145,7 @@ exam-필터은 (주)exam필터 의 사내 ERP/인트라넷 시스템이다. 2006
     │
     ├─ "기존 화면 수정" ──→ Area 1 (Legacy)에서 최소한의 수정
     │
-    ├─ "기존 데이터에 API 필요" ──→ Area 2 (BpApps)에 엔드포인트 추가
+    ├─ "기존 데이터에 API 필요" ──→ Area 2 (Core MVC Framework)에 엔드포인트 추가
     │
     └─ "새 화면/기능" ──→ Area 3 (Next.js)에 구현
                               └─ 데이터는 Area 2 API를 통해 접근
@@ -185,7 +185,7 @@ index.php (부트스트랩)
         │
         ▼
 hwmanager.php 실행
-├── MI_DB_query() → SQL 실행
+├── $db->query() → SQL 실행
 ├── 결과를 class2 테이블로 렌더링
 └── HTML + jQuery 이벤트 바인딩
 ```
@@ -197,11 +197,11 @@ hwmanager.php 실행
 ```php
 // 레거시 방식 — exam-db.php
 MI_DB_connect($name, $user, $pass);   // mysqli 연결
-MI_DB_query($sql, $_mysqli);          // 문자열 결합 SQL 실행
-MI_DB_query_get($sql, $_mysqli, $key); // 연관 배열 반환
+$db->query($sql, $_mysqli);          // 문자열 결합 SQL 실행
+$db->query_get($sql, $_mysqli, $key); // 연관 배열 반환
 ```
 
-**문제점**: SQL 문자열에 사용자 입력이 직접 결합되는 구간이 존재한다. 이것이 Area 2(BpApps)를 만든 직접적 동기 중 하나다.
+**문제점**: SQL 문자열에 사용자 입력이 직접 결합되는 구간이 존재한다. 이것이 Area 2(Core MVC Framework)를 만든 직접적 동기 중 하나다.
 
 ### 4.4 뷰 렌더링 — class2와 form 패턴
 
@@ -216,13 +216,13 @@ MI_DB_query_get($sql, $_mysqli, $key); // 연관 배열 반환
 
 ---
 
-## 5. Area 2: BpApps MVC — 레거시 위의 안전망
+## 5. Area 2: Core MVC Framework MVC — 레거시 위의 안전망
 
-### 5.1 BpApps가 해결하는 것
+### 5.1 Core MVC Framework가 해결하는 것
 
-BpApps는 "레거시를 대체하는 것"이 아니라 **"레거시와 모던 사이의 안전한 통로"**다:
+Core MVC Framework는 "레거시를 대체하는 것"이 아니라 **"레거시와 모던 사이의 안전한 통로"**다:
 
-| AS-IS (Legacy) | TO-BE (BpApps) |
+| AS-IS (Legacy) | TO-BE (Core MVC Framework) |
 |----------------|----------------|
 | 파일명 = URL | 라우터 기반 URL 매핑 |
 | 문자열 결합 SQL | Prepared Statement (BaseModel) |
@@ -233,15 +233,15 @@ BpApps는 "레거시를 대체하는 것"이 아니라 **"레거시와 모던 �
 ### 5.2 프레임워크 구조
 
 ```
-BpApps/
+Core MVC Framework/
 ├── Boot/
 │   ├── BizportalCommonConfig.php    ← PHP 7.4 초기화, 로깅
-│   ├── BpAppsAutoload.php           ← 네임스페이스 기반 오토로더
-│   └── BpAppsMigration.php          ← 레거시 함수 브릿지 (핵심!)
+│   ├── Core MVC FrameworkAutoload.php           ← 네임스페이스 기반 오토로더
+│   └── Core MVC FrameworkMigration.php          ← 레거시 함수 브릿지 (핵심!)
 ├── Common/
 │   └── BizportalCommonClass.php     ← 싱글턴: 사용자/유틸/로깅
 ├── Config/
-│   └── BpAppsRouteConfig.php        ← 라우터 설정
+│   └── Core MVC FrameworkRouteConfig.php        ← 라우터 설정
 ├── Controllers/
 │   ├── api/                         ← RESTful API 컨트롤러
 │   ├── hardware/                    ← 도메인별 컨트롤러
@@ -257,10 +257,10 @@ BpApps/
 
 ### 5.3 BaseModel — 안전한 쿼리 빌더
 
-BpApps의 핵심 가치는 여기에 있다. 레거시의 문자열 결합 SQL을 Prepared Statement로 교체:
+Core MVC Framework의 핵심 가치는 여기에 있다. 레거시의 문자열 결합 SQL을 Prepared Statement로 교체:
 
 ```php
-// BpApps 방식 — BaseModel 쿼리 빌더
+// Core MVC Framework 방식 — BaseModel 쿼리 빌더
 $result = (new HardwareModel())
     ->select(['HW_SERIAL', 'HW_MAC', 'HW_STATUS'])
     ->from('-')
@@ -275,16 +275,16 @@ $result = (new HardwareModel())
 - 복잡한 조인·서브쿼리가 많아 ORM의 추상화가 오히려 방해
 - 목표는 "SQL의 안전한 실행"이지 "SQL 작성의 추상화"가 아닌
 
-### 5.4 BpAppsMigration — 레거시 브릿지
+### 5.4 Core MVC FrameworkMigration — 레거시 브릿지
 
-가장 현실적인 설계 판단 중 하나. BpApps 컨트롤러에서 레거시 함수를 호출할 수 있는 브릿지:
+가장 현실적인 설계 판단 중 하나. Core MVC Framework 컨트롤러에서 레거시 함수를 호출할 수 있는 브릿지:
 
 ```php
-// BpApps 컨트롤러 내에서 레거시 함수 사용
-require_once ROOT_PATH . "/BpApps/Boot/BpAppsMigration.php";
+// Core MVC Framework 컨트롤러 내에서 레거시 함수 사용
+require_once ROOT_PATH . "/Core MVC Framework/Boot/Core MVC FrameworkMigration.php";
 
-// 레거시의 MI_DB_* 함수를 BpApps 컨텍스트에서 안전하게 호출
-$legacyResult = MI_DB_query_get($sql, $db_link, 'ID');
+// 레거시의 MI_DB_* 함수를 Core MVC Framework 컨텍스트에서 안전하게 호출
+$legacyResult = $db->query_get($sql, $db_link, 'ID');
 ```
 
 **왜 필요한가**: 레거시에 이미 구현된 복잡한 비즈니스 로직을 처음부터 다시 짜지 않기 위해. "나쁜 코드"라도 **검증된 로직**이면 재사용한다.
@@ -296,8 +296,8 @@ POST /rest/---/-/---
           │
           ▼
 rest/--/index.php
-├── BpAppsRouteConfig::setRouteVersion('1.1')
-├── BpAppsRouteConfig::loadRouter()
+├── Core MVC FrameworkRouteConfig::setRouteVersion('1.1')
+├── Core MVC FrameworkRouteConfig::loadRouter()
 └── BaseRouterV1::runScript()
           │
           ▼
@@ -347,7 +347,7 @@ rest/--/index.php
 └── lib/                    # 유틸리티 (date, format 등)
 ```
 
-### 6.3 API 연동 — Next.js → BpApps
+### 6.3 API 연동 — Next.js → Core MVC Framework
 
 Next.js가 PHP 백엔드와 소통하는 핵심 메커니즘은 **서버 사이드 리라이트**:
 
@@ -366,7 +366,7 @@ async rewrites() {
 
 **흐름**:
 ```
-브라우저 → Next.js (Node.js) → rewrite → BpApps (PHP/Apache) → MariaDB
+브라우저 → Next.js (Node.js) → rewrite → Core MVC Framework (PHP/Apache) → MariaDB
                                            ↑
                                     서버 사이드에서 발생
                                     (CORS 문제 없음)
@@ -389,7 +389,7 @@ async rewrites() {
 Next.js 로그인 폼 → POST /-/---/-/login
     │
     ▼
-BpApps LoginController → DB 검증 → 세션 쿠키 발급
+Core MVC Framework LoginController → DB 검증 → 세션 쿠키 발급
     │
     ▼
 사용자가 /-.php (Legacy) 접속
@@ -398,15 +398,15 @@ BpApps LoginController → DB 검증 → 세션 쿠키 발급
 index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
 ```
 
-**핵심**: 쿠키 `bizportal_token_key`가 세 영역을 관통하는 공유 인증 토큰이다. PHP 세션과 BpApps 인증이 동일한 저장소를 참조하므로, 사용자는 한 번 로그인하면 레거시·모던 화면을 자유롭게 이동할 수 있다.
+**핵심**: 쿠키 `AUTH_SESSION_ID`가 세 영역을 관통하는 공유 인증 토큰이다. PHP 세션과 Core MVC Framework 인증이 동일한 저장소를 참조하므로, 사용자는 한 번 로그인하면 레거시·모던 화면을 자유롭게 이동할 수 있다.
 
 ### 7.2 데이터 흐름 패턴
 
 | 시나리오 | 흐름 |
 |---------|------|
-| 기존 화면에서 데이터 조회 | Legacy PHP → MI_DB_query → HTML 렌더링 |
-| 새 화면에서 같은 데이터 조회 | Next.js → API call → BpApps Controller → BaseModel → JSON |
-| 모던 화면에서 레거시 로직 필요 | Next.js → API → BpApps → BpAppsMigration → 레거시 함수 |
+| 기존 화면에서 데이터 조회 | Legacy PHP → $db->query → HTML 렌더링 |
+| 새 화면에서 같은 데이터 조회 | Next.js → API call → Core MVC Framework Controller → BaseModel → JSON |
+| 모던 화면에서 레거시 로직 필요 | Next.js → API → Core MVC Framework → Core MVC FrameworkMigration → 레거시 함수 |
 
 ### 7.3 화면 전환 — HTML 링크, Router 아님
 
@@ -430,7 +430,7 @@ index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
 
 ```
 ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│  Legacy PHP   │   │  BpApps MVC   │   │  Next.js 15   │
+│  Legacy PHP   │   │  Core MVC Framework MVC   │   │  Next.js 15   │
 │  -  │   │  BaseModel    │   │  REST API     │
 └───────┬───────┘   └───────┬───────┘   └───────┬───────┘
         │                   │                    │
@@ -440,17 +440,17 @@ index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
         ▼    ▼                                   │
   ┌──────────────┐                               │
   │   MariaDB    │ ◄─────────────────────────────┘
-  │   (-)   │     (BpApps API를 통해 간접 접근)
+  │   (-)   │     (Core MVC Framework API를 통해 간접 접근)
   └──────────────┘
 ```
 
 ### 8.2 세 가지 접근 패턴 비교
 
-| | Area 1: Legacy | Area 2: BpApps | Area 3: Next.js |
+| | Area 1: Legacy | Area 2: Core MVC Framework | Area 3: Next.js |
 |---|--------------|---------------|----------------|
 | **접근 방식** | Direct SQL 실행 | 쿼리 빌더 | REST API 호출 |
-| **연결** | MI_DB_connect (mysqli) | BaseModel (mysqli prepared) | HTTP → BpApps |
-| **Prepared Statement** | ❌ | ✅ | ✅ (BpApps가 보장) |
+| **연결** | MI_DB_connect (mysqli) | BaseModel (mysqli prepared) | HTTP → Core MVC Framework |
+| **Prepared Statement** | ❌ | ✅ | ✅ (Core MVC Framework가 보장) |
 | **트랜잭션** | 수동 | BaseModel 지원 | API 단위 |
 | **위험도** | SQL Injection 가능 | 안전 | 안전 |
 
@@ -461,15 +461,15 @@ index.php → 쿠키 확인 → $_SESSION 로드 → 같은 사용자
 ```php
 // Area 1 — Legacy (-.php)
 $sql = "SELECT * FROM - WHERE - = '{$serial}'";
-$result = MI_DB_query($sql, $db_link);
+$result = $db->query($sql, $db_link);
 ```
 
 ```php
-// Area 2 — BpApps (HardwareModel.php)
+// Area 2 — Core MVC Framework (Legacy_DB_Wrapper.php)
 $result = (new HardwareModel())
-    ->select(['HW_SERIAL', 'HW_MAC', 'HW_STATUS'])
-    ->from('-')
-    ->where('HW_SERIAL', $serial)  // 자동 바인딩
+    ->select(['item_id', 'item_status'])
+    ->from('ASSET_MASTER')
+    ->where('item_status', $serial)  // 자동 바인딩
     ->execute();
 ```
 
@@ -503,7 +503,7 @@ services:
 
   # ── 애플리케이션 레이어 ──
   php-apache:                   # Area 1 + Area 2
-    # Legacy PHP + BpApps 모두 Apache에서 서빙
+    # Legacy PHP + Core MVC Framework 모두 Apache에서 서빙
     volumes:
       - /var/www/html/-:/var/www/html
 
@@ -526,7 +526,7 @@ Reverse Proxy (Apache/Nginx)
   │
   └─ /*.php, /rest/* ──→ PHP-Apache
                           ├─ Area 1 (Legacy PHP)
-                          └─ Area 2 (BpApps REST API)
+                          └─ Area 2 (Core MVC Framework REST API)
 ```
 
 ---
@@ -540,7 +540,7 @@ Reverse Proxy (Apache/Nginx)
 | 세 영역을 동시에 이해해야 하는 인지 부하 | 운영 중단 없이 점진적 현대화 |
 | 두 런타임(PHP + Node.js) 동시 운영 | 각 영역에 최적의 기술 스택 사용 |
 | 인증·세션 공유의 복잡성 | 사용자는 하나의 시스템으로 인식 |
-| BpAppsMigration 브릿지의 기술 부채 | 10만줄의 레거시 로직을 다시 쓰지 않음 |
+| Core MVC FrameworkMigration 브릿지의 기술 부채 | 10만줄의 레거시 로직을 다시 쓰지 않음 |
 | Area 1의 보안 취약점이 여전히 공존 | Area 3은 Area 2 API를 통해 격리 |
 
 ### 10.2 핵심 교훈
@@ -551,7 +551,7 @@ Strangler Fig를 선택한 건 이상적이어서가 아니라 **현실적이어
 
 #### Lesson 2: "경계가 가장 중요하다"
 
-세 영역의 코드 품질보다 **세 영역 사이의 인터페이스**가 더 중요했다. BpApps API가 잘 설계되니, Area 3(Next.js)는 Area 1(Legacy)의 존재를 몰라도 되었다. **경계가 깔끔하면 내부는 지저분해도 된다**.
+세 영역의 코드 품질보다 **세 영역 사이의 인터페이스**가 더 중요했다. Core MVC Framework API가 잘 설계되니, Area 3(Next.js)는 Area 1(Legacy)의 존재를 몰라도 되었다. **경계가 깔끔하면 내부는 지저분해도 된다**.
 
 #### Lesson 3: "ORM이 아니라 안전한 SQL이 필요했다"
 
@@ -559,7 +559,7 @@ BaseModel 쿼리 빌더를 직접 만든 건 NIH(Not Invented Here) 증후군이
 
 #### Lesson 4: "브릿지는 부끄러운 게 아니다"
 
-`BpAppsMigration.php`는 기술적으로 아름답지 않다. 모던 MVC 컨트롤러가 레거시 함수를 `require_once`로 끌어오는 건 교과서에 나올 패턴이 아니다. 하지만 이것 덕분에 **검증된 비즈니스 로직을 다시 쓰는 위험**을 피했다. 현실에서는 "깨끗함"보다 "안전한 전이"가 더 가치 있다.
+`Core MVC FrameworkMigration.php`는 기술적으로 아름답지 않다. 모던 MVC 컨트롤러가 레거시 함수를 `require_once`로 끌어오는 건 교과서에 나올 패턴이 아니다. 하지만 이것 덕분에 **검증된 비즈니스 로직을 다시 쓰는 위험**을 피했다. 현실에서는 "깨끗함"보다 "안전한 전이"가 더 가치 있다.
 
 #### Lesson 5: "새 기능의 방향만 틀면 된다"
 
@@ -570,7 +570,7 @@ BaseModel 쿼리 빌더를 직접 만든 건 NIH(Not Invented Here) 증후군이
 ```
 2016 ──────────── 2022 ──────── 2024 ──── 2025 ──── 2026 ──→
 
-[Legacy PHP만]    [BpApps 도입]  [Next.js]  [하이브리드]  [점진적]
+[Legacy PHP만]    [Core MVC Framework 도입]  [Next.js]  [하이브리드]  [점진적]
                               [시작]    [안정화]    [확장]
 
 Area 1 ████████████████████████████████████████░░░░░░░░░  (축소 중)
