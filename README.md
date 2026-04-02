@@ -47,11 +47,18 @@ Chapter 1의 "검색을 강제한다"의 뒷면 — 실제 검색 인프라를 �
 
 | 문서 | 내용 |
 |------|------|
-| [04. 본편 — MCP RAG Server Architecture](./04-mcp-rag-server-architecture.md) | MCP 서버 아키텍처, 벡터 DB + 임베딩 사이드카, 3-Tier 검색 파이프라인, 도메인 격리, 청킹 전략, 스텔스 인덱싱, 컨테이너 오케스트레이션, 실전 교훈 |
+| [04. 초기 아키텍처 — MCP RAG Server](./04-mcp-rag-server-architecture.md) | MCP 서버 아키텍처, 벡터 DB + 임베딩 사이드카, 3-Tier 검색 파이프라인, 도메인 격리, 청킹 전략, 스텔스 인덱싱, 컨테이너 오케스트레이션, 실전 교훈 |
+| [05. 아키텍처 진화 — GraphRAG & Self-RAG](./05-evolution-to-graphrag.md) | 벡터 검색의 Multi-hop 한계점 진단, Neo4j 기반 Knowledge Graph 도입, Triple-Hybrid Search, Self-RAG 자가 교정 루프, KPI 지표 개선 결과 |
 
 ---
 
-### Chapter N. *(예정)*
+### Chapter 4. Enterprise AI Security
+
+AI 에이전트를 사내망(폐쇄망) 환경에 안전하게 투입하기 위한 제로 트러스트(Zero-Trust) 보안 통제 아키텍처.
+
+| 문서 | 내용 |
+|------|------|
+| [06. 본편 — Zero-Trust 기반 에이전트 오케스트레이션](./06-zero-trust-enterprise-ai.md) | 파괴적 행동 방지를 위한 컨테이너 샌드박싱, Local-First 프록싱 데이터 보호, Resource-Aware 워크로드 트로틀링, Identity 도메인 격리 원칙 |
 
 ---
 
